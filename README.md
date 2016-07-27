@@ -1,6 +1,6 @@
 # lib servicediscovery
 
-lib-auth is a small golang library that handles the service discovery via consul or any other DNS server that delivers SRV records.
+lib-servicediscovery is a small golang library that handles the service discovery via consul or any other DNS server that delivers SRV records.
 
 ## Packages 
  The library consists of the following packages:
