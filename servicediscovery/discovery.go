@@ -14,6 +14,11 @@ type consulServiceDiscovery struct {
 	targetCache map[string]net.IP
 }
 
+type serviceInstance struct {
+	Ip 	string
+	Port 	string
+}
+
 func NewConsulServiceDiscovery(dnsServer string) (ServiceDiscovery, error) {
 
 	host, port, err := net.SplitHostPort(dnsServer)
@@ -44,6 +49,22 @@ func NewConsulServiceDiscovery(dnsServer string) (ServiceDiscovery, error) {
 }
 
 func (s *consulServiceDiscovery) DiscoverService(serviceName string) (ip string, port string, err error) {
+	instances, err := s.DiscoverAllServiceInstances(serviceName)
+	if err != nil {
+		return "","", err
+	}
+
+	if len(instances) == 0 {
+		log.WithField("serviceName", serviceName).Error("Service lookup: No SRV entry in DNS response")
+		return "", "", fmt.Errorf("Service lookup: No SRV entry in DNS response")
+	}
+
+	return instances[0].Ip, instances[0].Port, nil
+}
+
+func (s *consulServiceDiscovery) DiscoverAllServiceInstances(serviceName string) (instances []serviceInstance, err error) {
+
+	instances = make([]serviceInstance, 0)
 
 	m := new(dns.Msg)
 	fqdn := dns.Fqdn(serviceName + s.dnsSearch)
@@ -55,12 +76,12 @@ func (s *consulServiceDiscovery) DiscoverService(serviceName string) (ip string,
 			WithField("dnsServer", s.dnsServer).
 			WithField("error", err).
 			Error("Error during connection to DNS server")
-		return "", "", err
+		return nil, err
 	}
 
 	if r.Rcode != dns.RcodeSuccess {
 		log.WithField("serviceName", fqdn).Error("Service lookup: DNS query did not succeed")
-		return "", "", fmt.Errorf("Service lookup: DNS query did not succeed")
+		return nil, fmt.Errorf("Service lookup: DNS query did not succeed")
 	}
 
 	for _, a := range r.Answer {
@@ -68,13 +89,15 @@ func (s *consulServiceDiscovery) DiscoverService(serviceName string) (ip string,
 			target := srv.Target[:len(srv.Target) - 1]
 			targetIp, err := s.resolveTarget(target)
 			if err == nil {
-				return targetIp.String(), fmt.Sprintf("%d", srv.Port), nil
+				instances = append(instances, serviceInstance{
+					Ip: targetIp.String(),
+					Port: fmt.Sprintf("%d", srv.Port),
+				})
 			}
 		}
 	}
 
-	log.WithField("serviceName", fqdn).Error("Service lookup: No SRV entry in DNS response")
-	return "", "", fmt.Errorf("Service lookup: No SRV entry in DNS response")
+	return instances, nil
 }
 
 func (s *consulServiceDiscovery) resolveTarget(target string) (ip net.IP, err error) {

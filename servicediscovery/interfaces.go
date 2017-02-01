@@ -11,4 +11,5 @@ type DnsClient interface {
 
 type ServiceDiscovery interface {
 	DiscoverService(serviceName string) (ip string, port string, err error)
+	DiscoverAllServiceInstances(serviceName string) (instances []serviceInstance, err error)
 }

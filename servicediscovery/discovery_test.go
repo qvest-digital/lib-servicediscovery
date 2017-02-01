@@ -75,7 +75,7 @@ func TestServiceDiscovery_DiscoverService(t *testing.T) {
 			&dns.A{
 				A: net.IPv4(10,0,0,2)},
 		}},
-		time.Duration(0), nil).After(srvCall)
+		time.Duration(0), nil).After(srvCall).Times(2)
 
 	// when
 	ip, port, err := testSubject.DiscoverService("serviceName")
@@ -117,7 +117,7 @@ func TestServiceDiscovery_DiscoverServiceCachedTarget(t *testing.T) {
 				Target: "hostname2.",
 				Port: 2},
 		}},
-		time.Duration(0), nil)
+		time.Duration(0), nil).Times(2)
 
 	// when
 	ip, port, err := testSubject.DiscoverService("serviceName")
