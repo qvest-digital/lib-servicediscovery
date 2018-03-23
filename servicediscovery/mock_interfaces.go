@@ -72,9 +72,9 @@ func (_mr *_MockServiceDiscoveryRecorder) DiscoverService(arg0 interface{}) *gom
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "DiscoverService", arg0)
 }
 
-func (_m *MockServiceDiscovery) DiscoverAllServiceInstances(serviceName string) ([]serviceInstance, error) {
+func (_m *MockServiceDiscovery) DiscoverAllServiceInstances(serviceName string) ([]ServiceInstance, error) {
 	ret := _m.ctrl.Call(_m, "DiscoverAllServiceInstances", serviceName)
-	ret0, _ := ret[0].([]serviceInstance)
+	ret0, _ := ret[0].([]ServiceInstance)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -82,3 +82,4 @@ func (_m *MockServiceDiscovery) DiscoverAllServiceInstances(serviceName string) 
 func (_mr *_MockServiceDiscoveryRecorder) DiscoverAllServiceInstances(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "DiscoverAllServiceInstances", arg0)
 }
+
