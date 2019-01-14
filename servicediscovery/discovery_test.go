@@ -1,13 +1,14 @@
 package servicediscovery
 
 import (
-	"testing"
-	"github.com/golang/mock/gomock"
-	"github.com/miekg/dns"
-	"time"
-	"github.com/stretchr/testify/assert"
 	"fmt"
 	"net"
+	"testing"
+	"time"
+
+	"github.com/golang/mock/gomock"
+	"github.com/miekg/dns"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestServiceDiscovery_DiscoverService_NoEntries(t *testing.T) {
@@ -19,10 +20,10 @@ func TestServiceDiscovery_DiscoverService_NoEntries(t *testing.T) {
 	mockDnsClient := NewMockDnsClient(ctrl)
 
 	// given: test subject
-	testSubject := consulServiceDiscovery{
+	testSubject := serviceDiscovery{
 		dnsServer: "dnsServer",
 		dnsSearch: "dnsSearch",
-		client: mockDnsClient}
+		client:    mockDnsClient}
 
 	// expect
 	mockDnsClient.EXPECT().Exchange(gomock.Any(), "dnsServer").Return(&dns.Msg{MsgHdr: dns.MsgHdr{Rcode: 0}}, time.Duration(0), nil)
@@ -48,10 +49,10 @@ func TestServiceDiscovery_DiscoverService(t *testing.T) {
 	mockDnsClient := NewMockDnsClient(ctrl)
 
 	// given: test subject
-	testSubject := consulServiceDiscovery{
-		dnsServer: "dnsServer",
-		dnsSearch: "dnsSearch",
-		client: mockDnsClient,
+	testSubject := serviceDiscovery{
+		dnsServer:   "dnsServer",
+		dnsSearch:   "dnsSearch",
+		client:      mockDnsClient,
 		targetCache: make(map[string]net.IP)}
 
 	// expect
@@ -60,10 +61,10 @@ func TestServiceDiscovery_DiscoverService(t *testing.T) {
 		Answer: []dns.RR{
 			&dns.SRV{
 				Target: "hostname1.",
-				Port: 1},
+				Port:   1},
 			&dns.SRV{
 				Target: "hostname2.",
-				Port: 2},
+				Port:   2},
 		}},
 		time.Duration(0), nil)
 
@@ -71,9 +72,9 @@ func TestServiceDiscovery_DiscoverService(t *testing.T) {
 		MsgHdr: dns.MsgHdr{Rcode: 0},
 		Answer: []dns.RR{
 			&dns.A{
-				A: net.IPv4(10,0,0,1)},
+				A: net.IPv4(10, 0, 0, 1)},
 			&dns.A{
-				A: net.IPv4(10,0,0,2)},
+				A: net.IPv4(10, 0, 0, 2)},
 		}},
 		time.Duration(0), nil).After(srvCall).Times(2)
 
@@ -86,7 +87,7 @@ func TestServiceDiscovery_DiscoverService(t *testing.T) {
 	a.NoError(err)
 
 	// and the target cache contains the new entry
-	a.Equal(testSubject.targetCache["hostname1"], net.IPv4(10,0,0,1))
+	a.Equal(testSubject.targetCache["hostname1"], net.IPv4(10, 0, 0, 1))
 }
 
 func TestServiceDiscovery_DiscoverServiceCachedTarget(t *testing.T) {
@@ -98,13 +99,13 @@ func TestServiceDiscovery_DiscoverServiceCachedTarget(t *testing.T) {
 	mockDnsClient := NewMockDnsClient(ctrl)
 
 	// given: test subject
-	testSubject := consulServiceDiscovery{
-		dnsServer: "dnsServer",
-		dnsSearch: "dnsSearch",
-		client: mockDnsClient,
+	testSubject := serviceDiscovery{
+		dnsServer:   "dnsServer",
+		dnsSearch:   "dnsSearch",
+		client:      mockDnsClient,
 		targetCache: make(map[string]net.IP)}
 
-	testSubject.targetCache["hostname1"] = net.IPv4(10,0,0,3)
+	testSubject.targetCache["hostname1"] = net.IPv4(10, 0, 0, 3)
 
 	// expect
 	mockDnsClient.EXPECT().Exchange(gomock.Any(), "dnsServer").Return(&dns.Msg{
@@ -112,10 +113,10 @@ func TestServiceDiscovery_DiscoverServiceCachedTarget(t *testing.T) {
 		Answer: []dns.RR{
 			&dns.SRV{
 				Target: "hostname1.",
-				Port: 1},
+				Port:   1},
 			&dns.SRV{
 				Target: "hostname2.",
-				Port: 2},
+				Port:   2},
 		}},
 		time.Duration(0), nil).Times(2)
 
@@ -140,15 +141,15 @@ func TestServiceDiscovery_SRV_NoSuccess(t *testing.T) {
 	mockDnsClient := NewMockDnsClient(ctrl)
 
 	// given: test subject
-	testSubject := consulServiceDiscovery{
+	testSubject := serviceDiscovery{
 		dnsServer: "dnsServer",
 		dnsSearch: "dnsSearch",
-		client: mockDnsClient}
+		client:    mockDnsClient}
 
 	// expect
 	mockDnsClient.EXPECT().Exchange(gomock.Any(), "dnsServer").Return(&dns.Msg{
-			MsgHdr: dns.MsgHdr{Rcode: 1},
-		},
+		MsgHdr: dns.MsgHdr{Rcode: 1},
+	},
 		time.Duration(0), nil)
 
 	// when
@@ -172,10 +173,10 @@ func TestServiceDiscovery_Exchange_SRV_Fail(t *testing.T) {
 	mockDnsClient := NewMockDnsClient(ctrl)
 
 	// given: test subject
-	testSubject := consulServiceDiscovery{
+	testSubject := serviceDiscovery{
 		dnsServer: "dnsServer",
 		dnsSearch: "dnsSearch",
-		client: mockDnsClient}
+		client:    mockDnsClient}
 
 	// expect
 	mockDnsClient.EXPECT().Exchange(gomock.Any(), "dnsServer").Return(nil, time.Duration(0), fmt.Errorf("error"))
@@ -201,10 +202,10 @@ func TestServiceDiscovery_Resolve_A_Fail(t *testing.T) {
 	mockDnsClient := NewMockDnsClient(ctrl)
 
 	// given: test subject
-	testSubject := consulServiceDiscovery{
-		dnsServer: "dnsServer",
-		dnsSearch: "dnsSearch",
-		client: mockDnsClient,
+	testSubject := serviceDiscovery{
+		dnsServer:   "dnsServer",
+		dnsSearch:   "dnsSearch",
+		client:      mockDnsClient,
 		targetCache: make(map[string]net.IP)}
 
 	// expect
@@ -213,10 +214,10 @@ func TestServiceDiscovery_Resolve_A_Fail(t *testing.T) {
 		Answer: []dns.RR{
 			&dns.SRV{
 				Target: "hostname1.",
-				Port: 1},
+				Port:   1},
 			&dns.SRV{
 				Target: "hostname2.",
-				Port: 2},
+				Port:   2},
 		}},
 		time.Duration(0), nil)
 
@@ -243,10 +244,10 @@ func TestServiceDiscovery_A_NoSuccess(t *testing.T) {
 	mockDnsClient := NewMockDnsClient(ctrl)
 
 	// given: test subject
-	testSubject := consulServiceDiscovery{
-		dnsServer: "dnsServer",
-		dnsSearch: "dnsSearch",
-		client: mockDnsClient,
+	testSubject := serviceDiscovery{
+		dnsServer:   "dnsServer",
+		dnsSearch:   "dnsSearch",
+		client:      mockDnsClient,
 		targetCache: make(map[string]net.IP)}
 
 	// expect
@@ -255,10 +256,10 @@ func TestServiceDiscovery_A_NoSuccess(t *testing.T) {
 		Answer: []dns.RR{
 			&dns.SRV{
 				Target: "hostname1.",
-				Port: 1},
+				Port:   1},
 			&dns.SRV{
 				Target: "hostname2.",
-				Port: 2},
+				Port:   2},
 		}},
 		time.Duration(0), nil)
 
@@ -288,10 +289,10 @@ func TestServiceDiscovery_NoARecords(t *testing.T) {
 	mockDnsClient := NewMockDnsClient(ctrl)
 
 	// given: test subject
-	testSubject := consulServiceDiscovery{
-		dnsServer: "dnsServer",
-		dnsSearch: "dnsSearch",
-		client: mockDnsClient,
+	testSubject := serviceDiscovery{
+		dnsServer:   "dnsServer",
+		dnsSearch:   "dnsSearch",
+		client:      mockDnsClient,
 		targetCache: make(map[string]net.IP)}
 
 	// expect
@@ -300,10 +301,10 @@ func TestServiceDiscovery_NoARecords(t *testing.T) {
 		Answer: []dns.RR{
 			&dns.SRV{
 				Target: "hostname1.",
-				Port: 1},
+				Port:   1},
 			&dns.SRV{
 				Target: "hostname2.",
-				Port: 2},
+				Port:   2},
 		}},
 		time.Duration(0), nil)
 
@@ -321,7 +322,23 @@ func TestServiceDiscovery_NoARecords(t *testing.T) {
 	a.EqualError(err, "Service lookup: No SRV entry in DNS response")
 
 	// and the target cache is empty
-	a.Equal(len(testSubject.targetCache) ,0)
+	a.Equal(len(testSubject.targetCache), 0)
+}
+
+func TestConsulServiceDiscovery_Constructor_IP(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// when
+	testSubject, _ := NewConsulServiceDiscovery("127.0.0.1:53")
+	castedTestSubject := testSubject.(*serviceDiscovery)
+
+	// then
+	a.Equal(castedTestSubject.dnsServer, "127.0.0.1:53")
+	a.Equal(castedTestSubject.targetCache, make(map[string]net.IP))
+	a.Equal(castedTestSubject.dnsSearch, ".service.consul")
+	a.Equal(castedTestSubject.client, &dns.Client{})
 }
 
 func TestServiceDiscovery_Constructor_IP(t *testing.T) {
@@ -330,11 +347,27 @@ func TestServiceDiscovery_Constructor_IP(t *testing.T) {
 	defer ctrl.Finish()
 
 	// when
-	testSubject, _ := NewConsulServiceDiscovery("127.0.0.1:53")
-	castedTestSubject := testSubject.(*consulServiceDiscovery)
+	testSubject, _ := NewServiceDiscovery("127.0.0.1:53", "dnsSearch")
+	castedTestSubject := testSubject.(*serviceDiscovery)
 
 	// then
 	a.Equal(castedTestSubject.dnsServer, "127.0.0.1:53")
+	a.Equal(castedTestSubject.targetCache, make(map[string]net.IP))
+	a.Equal(castedTestSubject.dnsSearch, "dnsSearch")
+	a.Equal(castedTestSubject.client, &dns.Client{})
+}
+
+func TestConsulServiceDiscovery_Constructor_Hostname(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// when
+	testSubject, _ := NewConsulServiceDiscovery("localhost:53")
+	castedTestSubject := testSubject.(*serviceDiscovery)
+
+	// then
+	a.Equal(castedTestSubject.dnsServer, "[::1]:53")
 	a.Equal(castedTestSubject.targetCache, make(map[string]net.IP))
 	a.Equal(castedTestSubject.dnsSearch, ".service.consul")
 	a.Equal(castedTestSubject.client, &dns.Client{})
@@ -346,18 +379,17 @@ func TestServiceDiscovery_Constructor_Hostname(t *testing.T) {
 	defer ctrl.Finish()
 
 	// when
-	testSubject, _ := NewConsulServiceDiscovery("localhost:53")
-	castedTestSubject := testSubject.(*consulServiceDiscovery)
+	testSubject, _ := NewServiceDiscovery("localhost:53", "dnsSearch")
+	castedTestSubject := testSubject.(*serviceDiscovery)
 
 	// then
 	a.Equal(castedTestSubject.dnsServer, "[::1]:53")
 	a.Equal(castedTestSubject.targetCache, make(map[string]net.IP))
-	a.Equal(castedTestSubject.dnsSearch, ".service.consul")
+	a.Equal(castedTestSubject.dnsSearch, "dnsSearch")
 	a.Equal(castedTestSubject.client, &dns.Client{})
 }
 
-
-func TestServiceDiscovery_Constructor_WrongArg(t *testing.T) {
+func TestConsulServiceDiscovery_Constructor_WrongArg(t *testing.T) {
 	a := assert.New(t)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -370,13 +402,39 @@ func TestServiceDiscovery_Constructor_WrongArg(t *testing.T) {
 	a.Error(err)
 }
 
-func TestServiceDiscovery_Constructor_UnknownHost(t *testing.T) {
+func TestServiceDiscovery_Constructor_WrongArg(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// when
+	testSubject, err := NewServiceDiscovery("localhost::53", "dnsSearch")
+
+	// then
+	a.Nil(testSubject)
+	a.Error(err)
+}
+
+func TestConsulServiceDiscovery_Constructor_UnknownHost(t *testing.T) {
 	a := assert.New(t)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	// when
 	testSubject, err := NewConsulServiceDiscovery("unknown:53")
+
+	// then
+	a.Nil(testSubject)
+	a.EqualError(err, "lookup unknown: no such host")
+}
+
+func TestServiceDiscovery_Constructor_UnknownHost(t *testing.T) {
+	a := assert.New(t)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// when
+	testSubject, err := NewServiceDiscovery("unknown:53", "dnsSearch")
 
 	// then
 	a.Nil(testSubject)
