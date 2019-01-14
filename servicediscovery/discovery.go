@@ -68,8 +68,6 @@ func (s *serviceDiscovery) DiscoverService(serviceName string) (ip string, port 
 	return instances[0].Ip, instances[0].Port, nil
 }
 
-type InstanceOption func(serviceInstance) serviceInstance
-
 func (s *serviceDiscovery) DiscoverAllServiceInstances(serviceName string) (instances []serviceInstance, err error) {
 
 	instances = make([]serviceInstance, 0)
