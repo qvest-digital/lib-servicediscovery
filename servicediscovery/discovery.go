@@ -9,10 +9,9 @@ import (
 )
 
 type serviceDiscovery struct {
-	dnsServer   string
-	dnsSearch   string
-	client      DnsClient
-	targetCache map[string]net.IP
+	dnsServer string
+	dnsSearch string
+	client    DnsClient
 }
 
 type serviceInstance struct {
@@ -42,10 +41,9 @@ func NewServiceDiscovery(dnsServer, dnsSearch string) (ServiceDiscovery, error) 
 	}
 
 	ret := serviceDiscovery{
-		dnsServer:   dnsServer,
-		dnsSearch:   dnsSearch,
-		client:      &dns.Client{},
-		targetCache: make(map[string]net.IP)}
+		dnsServer: dnsServer,
+		dnsSearch: dnsSearch,
+		client:    &dns.Client{}}
 	return &ret, nil
 }
 
@@ -108,10 +106,6 @@ func (s *serviceDiscovery) DiscoverAllServiceInstances(serviceName string) (inst
 
 func (s *serviceDiscovery) resolveTarget(target string) (ip net.IP, err error) {
 
-	if val, ok := s.targetCache[target]; ok {
-		return val, nil
-	}
-
 	fqdn := dns.Fqdn(target)
 
 	m := new(dns.Msg)
@@ -134,7 +128,6 @@ func (s *serviceDiscovery) resolveTarget(target string) (ip net.IP, err error) {
 
 	for _, a := range r.Answer {
 		if srv, ok := a.(*dns.A); ok {
-			s.targetCache[target] = srv.A
 			return srv.A, nil
 		}
 	}
