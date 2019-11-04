@@ -1,4 +1,4 @@
-module github.com/tarent/lib-servicediscovery/v2
+module github.com/tarent/lib-servicediscovery
 
 go 1.13
 
